@@ -1,0 +1,50 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        kc_version: [latest, 20.0.3, 19.0.3]
+        db_vendor: [postgres, mariadb, mysql, mssql, oracle]
+    steps:
+      - 
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: amd64
+      - 
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - 
+        name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - 
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Build images
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          file: "Dockerfile"
+          platforms: linux/amd64
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/keycloak:${{matrix.kc_version}}-${{matrix.db_vendor}}
+          build-args: |
+            KEYCLOAK_VERSION=${{matrix.kc_version}}
+            DATABASE_VENDOR=${{matrix.db_vendor}}
+      - 
+        name: Update description
+        uses: peter-evans/dockerhub-description@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ secrets.DOCKERHUB_USERNAME }}/keycloak
