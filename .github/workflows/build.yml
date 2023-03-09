@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        kc_version: [latest, 20.0.3, 19.0.3]
+        kc_version: [latest, 20.0.5, 19.0.3]
         db_vendor: [postgres, mariadb, mysql, mssql, oracle]
     steps:
       - 
